@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SiteScout CRM | AI Agent</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --glass-bg: rgba(17, 24, 39, 0.7);
+            --accent: #3B82F6;
+        }
+        body { font-family: 'Inter', sans-serif; background-color: #020617; }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+        .glass {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+        }
+        .glass-hover:hover {
+            background: rgba(30, 41, 59, 0.8);
+            border-color: rgba(59, 130, 246, 0.3);
+        }
+        .sidebar-link.active {
+            background: linear-gradient(90deg, rgba(59, 130, 246, 0.15) 0%, transparent 100%);
+            color: #60A5FA;
+            border-left: 3px solid #60A5FA;
+        }
+        /* Loading Animation */
+        .loader {
+            border: 2px solid rgba(255,255,255,0.1);
+            border-left-color: #3B82F6;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #111827; }
+        ::-webkit-scrollbar-thumb { background: #374151; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #4B5563; }
+    </style>
+</head>
+<body class="text-slate-300 min-h-screen flex overflow-hidden selection:bg-blue-500/30">
+
+    <!-- Sidebar -->
+    <aside class="w-72 bg-[#0B1120] border-r border-gray-800/50 flex flex-col z-20">
+        <div class="p-8 pb-6 flex items-center gap-3">
+            <div class="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20 ring-1 ring-white/10">
+                <i data-lucide="bot" class="w-5 h-5 text-white"></i>
+            </div>
+            <div>
+                <h1 class="font-bold tracking-tight text-xl text-white">SiteScout</h1>
+                <p class="text-[10px] font-mono text-blue-400 tracking-wider">INTELLIGENCE UNIT</p>
+            </div>
+        </div>
+
+        <nav class="flex-1 px-6 space-y-2 mt-6">
+            <p class="text-xs font-semibold text-gray-500 px-3 mb-2 tracking-wider">MODULES</p>
+            <a href="index.html" class="sidebar-link active w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-all duration-200 text-sm font-medium group">
+                <i data-lucide="search" class="w-4 h-4"></i>
+                Find Leads
+            </a>
+            <a href="manage-lead.html" class="sidebar-link w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-all duration-200 text-sm font-medium group">
+                <i data-lucide="kanban-square" class="w-4 h-4"></i>
+                Pipeline
+                <span id="pipelineCount" class="ml-auto text-xs bg-gray-800 text-gray-300 px-2 py-0.5 rounded-md border border-gray-700">0</span>
+            </a>
+            <a href="scouting-history.html" class="sidebar-link w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-all duration-200 text-sm font-medium group">
+                <i data-lucide="history" class="w-4 h-4"></i>
+                History
+            </a>
+            <a href="follow-up.html" class="sidebar-link w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-all duration-200 text-sm font-medium group">
+                <i data-lucide="message-square" class="w-4 h-4"></i>
+                Follow Up
+            </a>
+        </nav>
+
+        <div class="p-6 border-t border-gray-800/50">
+            <div class="bg-gray-900/50 border border-gray-800 p-4 rounded-xl">
+                <div class="flex justify-between items-center mb-2">
+                    <p class="text-[10px] font-bold text-gray-500 tracking-wider">SYSTEM STATUS</p>
+                    <div class="flex items-center gap-1.5">
+                        <span class="relative flex h-2 w-2">
+                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                        </span>
+                        <span class="text-[10px] text-emerald-400 font-medium">ONLINE</span>
+                    </div>
+                </div>
+                <div class="h-1 w-full bg-gray-800 rounded-full overflow-hidden">
+                    <div class="h-full bg-emerald-500/50 w-[98%]"></div>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col relative overflow-hidden bg-[#020617]">
+        
+        <!-- Decoration -->
+        <div class="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-blue-600/10 rounded-full blur-[120px] pointer-events-none"></div>
+        <div class="absolute bottom-0 right-0 w-[600px] h-[600px] bg-indigo-600/5 rounded-full blur-[120px] pointer-events-none"></div>
+
+        <!-- View: SCOUT -->
+        <div class="flex-1 flex flex-col overflow-hidden">
+            <!-- Search Header -->
+            <header class="px-10 py-8 z-10">
+                <div class="max-w-5xl mx-auto">
+                    <div class="mb-8 text-center">
+                        <h2 class="text-3xl font-bold text-white mb-2 tracking-tight">Lead Reconnaissance</h2>
+                        <p class="text-gray-400">Deploy AI agents to scout and analyze potential business leads.</p>
+                    </div>
+                    
+                    <div class="glass p-1.5 rounded-2xl flex items-center gap-2 shadow-2xl shadow-blue-900/10 border border-white/10">
+                        <div class="flex-1 flex items-center gap-3 px-4 bg-gray-900/50 rounded-xl border border-transparent focus-within:border-blue-500/50 focus-within:bg-gray-900 transition-all">
+                            <i data-lucide="briefcase" class="w-5 h-5 text-blue-400"></i>
+                            <input type="text" id="industryInput" placeholder="Target Industry (e.g. Solar Installers)" 
+                                class="bg-transparent w-full py-4 focus:outline-none text-sm text-white placeholder-gray-500">
+                        </div>
+                        <div class="w-px h-8 bg-gray-700/50"></div>
+                        <div class="flex-1 flex items-center gap-3 px-4 bg-gray-900/50 rounded-xl border border-transparent focus-within:border-blue-500/50 focus-within:bg-gray-900 transition-all">
+                            <i data-lucide="map-pin" class="w-5 h-5 text-purple-400"></i>
+                            <input type="text" id="locationInput" placeholder="Target Location (e.g. Austin, TX)" 
+                                class="bg-transparent w-full py-4 focus:outline-none text-sm text-white placeholder-gray-500">
+                        </div>
+                        <button onclick="runScout(true)" id="scoutBtn" 
+                            class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white px-8 py-4 rounded-xl font-semibold transition-all shadow-lg shadow-blue-500/20 hover:shadow-blue-500/40 flex items-center gap-2">
+                            <span>Scout</span>
+                            <i data-lucide="sparkles" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Results Area -->
+            <div class="flex-1 overflow-y-auto px-10 pb-10">
+                <div class="max-w-6xl mx-auto mb-4 flex justify-between items-center h-8">
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs text-gray-500 font-medium">Sort:</span>
+                        <select id="sortFilter" onchange="sortResults()" class="bg-gray-900 border border-gray-700 text-gray-300 text-xs rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-1.5 outline-none">
+                            <option value="default">Default</option>
+                            <option value="rating_asc">Lowest Rating</option>
+                            <option value="rating_desc">Highest Rating</option>
+                            <option value="reviews_desc">Most Reviews</option>
+                        </select>
+                    </div>
+                    <button onclick="addSelectedToPipeline()" id="bulkAddBtn" class="hidden bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-1 rounded-lg text-xs font-medium transition flex items-center gap-2">
+                        <i data-lucide="plus-circle" class="w-3 h-3"></i> Add Selected (<span id="selectedCount">0</span>)
+                    </button>
+                </div>
+                <div class="max-w-6xl mx-auto bg-gray-900/40 border border-gray-800 rounded-xl overflow-y-auto max-h-[60vh] backdrop-blur-sm">
+                    <table class="w-full text-left border-collapse">
+                        <thead class="sticky top-0 bg-gray-900 z-10">
+                            <tr class="border-b border-gray-800 text-xs font-bold text-gray-500 uppercase tracking-wider">
+                                <th class="p-5 w-10">
+                                    <input type="checkbox" id="selectAll" onclick="toggleAll(this)" class="rounded border-gray-700 bg-gray-800 text-blue-600 focus:ring-blue-500/50 cursor-pointer">
+                                </th>
+                                <th class="p-5">Business Name</th>
+                                <th class="p-5">Contact</th>
+                                <th class="p-5">Digital Presence</th>
+                                <th class="p-5 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="resultsTableBody" class="divide-y divide-gray-800/50 text-sm text-gray-300">
+                            <!-- Rows injected here -->
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Pagination -->
+                <div id="paginationControls" class="max-w-6xl mx-auto mt-6 flex justify-between items-center hidden">
+                    <button onclick="changePage(-1)" id="prevBtn" class="px-4 py-2 rounded-lg border border-gray-700 hover:bg-gray-800 text-gray-400 hover:text-white transition text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
+                        <i data-lucide="chevron-left" class="w-4 h-4"></i> Previous
+                    </button>
+                    <span class="text-sm text-gray-500 font-mono">Page <span id="pageIndicator">1</span></span>
+                    <button onclick="changePage(1)" id="nextBtn" class="px-4 py-2 rounded-lg border border-gray-700 hover:bg-gray-800 text-gray-400 hover:text-white transition text-sm font-medium flex items-center gap-2">
+                        Next <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        // --- STATE & CONFIG ---
+        const API_URL = 'http://localhost:8000/api';
+        let currentPage = 1;
+        let currentSearch = { industry: '', location: '' };
+        let pipeline = JSON.parse(localStorage.getItem('siteScoutPipeline')) || [];
+        let currentLeads = [];
+
+        // Initialize Icons
+        lucide.createIcons();
+        updatePipelineCounts();
+
+        // Check for URL params (Re-run search)
+        const urlParams = new URLSearchParams(window.location.search);
+        if(urlParams.has('industry') && urlParams.has('location')) {
+            document.getElementById('industryInput').value = urlParams.get('industry');
+            document.getElementById('locationInput').value = urlParams.get('location');
+            runScout(true);
+        }
+
+        // --- SCOUTING LOGIC ---
+        async function runScout(isNewSearch, pageDelta = 0) {
+            const industry = document.getElementById('industryInput').value;
+            const location = document.getElementById('locationInput').value;
+            const btn = document.getElementById('scoutBtn');
+            const tableBody = document.getElementById('resultsTableBody');
+            const paginationControls = document.getElementById('paginationControls');
+
+            if(!industry || !location) return alert("Please enter Industry & Location");
+
+            if(isNewSearch) {
+                currentPage = 1;
+                currentSearch = { industry, location };
+
+                // Save to History
+                const history = JSON.parse(localStorage.getItem('siteScoutHistory')) || [];
+                history.unshift({ industry, location, date: new Date().toLocaleString() });
+                localStorage.setItem('siteScoutHistory', JSON.stringify(history.slice(0, 50))); // Keep last 50
+            } else {
+                currentPage += pageDelta;
+            }
+            
+            if(currentPage < 1) currentPage = 1;
+            tableBody.innerHTML = ''; // Clear table for pagination
+
+            // Loading State
+            const originalBtnText = btn.innerHTML;
+            if(isNewSearch) btn.innerHTML = '<div class="loader"></div>';
+            
+            try {
+                const res = await fetch(`${API_URL}/scout`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ ...currentSearch, page: currentPage })
+                });
+                const leads = await res.json();
+                currentLeads = leads;
+                
+                sortResults();
+
+                // Update Pagination UI
+                paginationControls.classList.remove('hidden');
+                document.getElementById('pageIndicator').innerText = currentPage;
+                document.getElementById('prevBtn').disabled = currentPage === 1;
+            } catch(e) {
+                console.error(e);
+                alert("Backend offline? Make sure main.py is running on port 8000");
+            } finally {
+                if(isNewSearch) btn.innerHTML = originalBtnText;
+            }
+        }
+
+        function sortResults() {
+            const sortValue = document.getElementById('sortFilter').value;
+            const tableBody = document.getElementById('resultsTableBody');
+            
+            let sorted = [...currentLeads];
+            
+            if(sortValue === 'rating_asc') {
+                sorted.sort((a, b) => (a.rating || 0) - (b.rating || 0));
+            } else if(sortValue === 'rating_desc') {
+                sorted.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+            } else if(sortValue === 'reviews_desc') {
+                sorted.sort((a, b) => (b.review_count || 0) - (a.review_count || 0));
+            }
+            
+            tableBody.innerHTML = '';
+            sorted.forEach(lead => {
+                const isSaved = pipeline.find(p => p.id === lead.id);
+                if(!isSaved) renderScoutRow(lead, tableBody);
+            });
+        }
+
+        function changePage(delta) {
+            runScout(false, delta);
+        }
+
+        function renderScoutRow(lead, container) {
+            const tr = document.createElement('tr');
+            tr.className = "hover:bg-gray-800/30 transition-colors group";
+            
+            const websiteContent = lead.website 
+                ? `<a href="${lead.website}" target="_blank" class="text-blue-400 hover:text-blue-300 hover:underline flex items-center gap-1 truncate max-w-[200px]">
+                     ${lead.website.replace(/^https?:\/\//, '')} <i data-lucide="external-link" class="w-3 h-3"></i>
+                   </a>` 
+                : `<span class="text-gray-600 flex items-center gap-1 text-xs"><i data-lucide="x-circle" class="w-3 h-3"></i> No Website</span>`;
+
+            // Generate Social Icons
+            let socialIcons = '';
+            if(lead.social_media) {
+                if(lead.social_media.linkedin) socialIcons += `<a href="${lead.social_media.linkedin}" target="_blank" class="text-gray-500 hover:text-blue-400"><i data-lucide="linkedin" class="w-4 h-4"></i></a>`;
+                if(lead.social_media.twitter) socialIcons += `<a href="${lead.social_media.twitter}" target="_blank" class="text-gray-500 hover:text-sky-400"><i data-lucide="twitter" class="w-4 h-4"></i></a>`;
+                if(lead.social_media.facebook) socialIcons += `<a href="${lead.social_media.facebook}" target="_blank" class="text-gray-500 hover:text-blue-600"><i data-lucide="facebook" class="w-4 h-4"></i></a>`;
+            }
+
+            let ratingHtml = '';
+            if(lead.rating) {
+                ratingHtml = `<div class="flex items-center gap-1 text-xs mt-0.5">
+                    <i data-lucide="star" class="w-3 h-3 text-yellow-500 fill-yellow-500"></i>
+                    <span class="text-gray-300 font-medium">${lead.rating}</span>
+                    <span class="text-gray-600">(${lead.review_count || 0})</span>
+                </div>`;
+            }
+
+            tr.innerHTML = `
+                <td class="p-5">
+                    <input type="checkbox" class="lead-checkbox rounded border-gray-700 bg-gray-800 text-blue-600 focus:ring-blue-500/50 cursor-pointer" 
+                        data-lead='${JSON.stringify(lead).replace(/'/g, "&apos;")}' onclick="updateBulkBtn()">
+                </td>
+                <td class="p-5">
+                    <div class="flex items-center gap-3 mb-1">
+                        <div class="w-8 h-8 rounded bg-gray-800 flex items-center justify-center text-gray-500 group-hover:text-blue-400 group-hover:bg-blue-900/20 transition-colors">
+                            <i data-lucide="building-2" class="w-4 h-4"></i>
+                        </div>
+                        <div>
+                            <span class="font-medium text-white block leading-tight">${lead.name}</span>
+                            ${ratingHtml}
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2 text-xs text-gray-500 ml-11"><i data-lucide="map-pin" class="w-3 h-3"></i> ${lead.location}</div>
+                </td>
+                <td class="p-5 text-gray-400">
+                    <div class="flex flex-col gap-1.5">
+                        <div class="flex items-center gap-2"><i data-lucide="phone" class="w-3 h-3"></i> ${lead.phone || 'N/A'}</div>
+                        <div class="flex items-center gap-2 text-xs"><i data-lucide="mail" class="w-3 h-3"></i> ${lead.email || 'N/A'}</div>
+                    </div>
+                </td>
+                <td class="p-5">
+                    <div class="space-y-2">
+                        ${websiteContent}
+                        <div class="flex gap-2 mt-1">${socialIcons}</div>
+                    </div>
+                </td>
+                <td class="p-5 text-right">
+                    <div class="flex justify-end gap-2">
+                        <a href="${lead.source_url || '#'}" target="_blank" class="p-2 rounded-lg border border-gray-700 hover:bg-gray-800 text-gray-400 hover:text-white transition" title="Research">
+                            <i data-lucide="search" class="w-4 h-4"></i>
+                        </a>
+                        <button onclick='addToPipeline(${JSON.stringify(lead)})' class="px-3 py-2 rounded-lg bg-gray-800 hover:bg-blue-600 text-xs font-semibold text-gray-300 hover:text-white transition-all border border-gray-700 hover:border-blue-500 inline-flex items-center gap-2">
+                            <i data-lucide="plus" class="w-3 h-3"></i> Add
+                        </button>
+                    </div>
+                </td>
+            `;
+            container.appendChild(tr);
+            lucide.createIcons();
+        }
+
+        // --- PIPELINE LOGIC ---
+        function addToPipeline(lead) {
+            if(pipeline.find(p => p.id === lead.id)) return;
+            
+            // Add status
+            lead.status = 'new';
+            pipeline.push(lead);
+            savePipeline();
+            
+            // Visual feedback
+            const btn = event.currentTarget;
+            btn.innerHTML = `<i data-lucide="check" class="w-3 h-3"></i> In Pipeline`;
+            btn.className = "px-4 py-2 rounded-lg bg-emerald-900/30 text-emerald-400 border border-emerald-900/50 text-xs font-semibold inline-flex items-center gap-2 cursor-default";
+            
+            updatePipelineCounts();
+        }
+
+        function savePipeline() {
+            localStorage.setItem('siteScoutPipeline', JSON.stringify(pipeline));
+            updatePipelineCounts();
+        }
+
+        function updatePipelineCounts() {
+            document.getElementById('pipelineCount').innerText = pipeline.length;
+        }
+
+        // --- BULK ACTIONS ---
+        function toggleAll(source) {
+            const checkboxes = document.querySelectorAll('.lead-checkbox');
+            checkboxes.forEach(cb => cb.checked = source.checked);
+            updateBulkBtn();
+        }
+
+        function updateBulkBtn() {
+            const count = document.querySelectorAll('.lead-checkbox:checked').length;
+            const btn = document.getElementById('bulkAddBtn');
+            document.getElementById('selectedCount').innerText = count;
+            
+            if(count > 0) btn.classList.remove('hidden');
+            else btn.classList.add('hidden');
+        }
+
+        function addSelectedToPipeline() {
+            const checkboxes = document.querySelectorAll('.lead-checkbox:checked');
+            let addedCount = 0;
+
+            checkboxes.forEach(cb => {
+                const lead = JSON.parse(cb.dataset.lead);
+                if(!pipeline.find(p => p.id === lead.id)) {
+                    lead.status = 'new';
+                    pipeline.push(lead);
+                    addedCount++;
+
+                    // Update row button visual
+                    const rowBtn = cb.closest('tr').querySelector('button[onclick*="addToPipeline"]');
+                    if(rowBtn) {
+                        rowBtn.innerHTML = `<i data-lucide="check" class="w-3 h-3"></i> In Pipeline`;
+                        rowBtn.className = "px-4 py-2 rounded-lg bg-emerald-900/30 text-emerald-400 border border-emerald-900/50 text-xs font-semibold inline-flex items-center gap-2 cursor-default";
+                    }
+                }
+            });
+
+            if(addedCount > 0) {
+                savePipeline();
+                // Reset selection
+                document.getElementById('selectAll').checked = false;
+                checkboxes.forEach(cb => cb.checked = false);
+                updateBulkBtn();
+            } else {
+                alert("Selected leads are already in the pipeline.");
+            }
+        }
+    </script>
+</body>
+</html>

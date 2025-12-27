@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SiteScout CRM | Follow Up</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #020617; }
+        .sidebar-link.active {
+            background: linear-gradient(90deg, rgba(59, 130, 246, 0.15) 0%, transparent 100%);
+            color: #60A5FA;
+            border-left: 3px solid #60A5FA;
+        }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #111827; }
+        ::-webkit-scrollbar-thumb { background: #374151; border-radius: 4px; }
+    </style>
+</head>
+<body class="text-slate-300 min-h-screen flex overflow-hidden selection:bg-blue-500/30">
+
+    <!-- Sidebar -->
+    <aside class="w-72 bg-[#0B1120] border-r border-gray-800/50 flex flex-col z-20">
+        <div class="p-8 pb-6 flex items-center gap-3">
+            <div class="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20 ring-1 ring-white/10">
+                <i data-lucide="bot" class="w-5 h-5 text-white"></i>
+            </div>
+            <div>
+                <h1 class="font-bold tracking-tight text-xl text-white">SiteScout</h1>
+                <p class="text-[10px] font-mono text-blue-400 tracking-wider">INTELLIGENCE UNIT</p>
+            </div>
+        </div>
+
+        <nav class="flex-1 px-6 space-y-2 mt-6">
+            <p class="text-xs font-semibold text-gray-500 px-3 mb-2 tracking-wider">MODULES</p>
+            <a href="index.html" class="sidebar-link w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-all duration-200 text-sm font-medium group">
+                <i data-lucide="search" class="w-4 h-4"></i> Find Leads
+            </a>
+            <a href="manage-lead.html" class="sidebar-link w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-all duration-200 text-sm font-medium group">
+                <i data-lucide="kanban-square" class="w-4 h-4"></i> Pipeline
+            </a>
+            <a href="scouting-history.html" class="sidebar-link w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-all duration-200 text-sm font-medium group">
+                <i data-lucide="history" class="w-4 h-4"></i> History
+            </a>
+            <a href="follow-up.html" class="sidebar-link active w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-all duration-200 text-sm font-medium group">
+                <i data-lucide="message-square" class="w-4 h-4"></i> Follow Up
+            </a>
+        </nav>
+
+        <div class="p-6 border-t border-gray-800/50">
+            <div class="bg-gray-900/50 border border-gray-800 p-4 rounded-xl">
+                <div class="flex justify-between items-center mb-2">
+                    <p class="text-[10px] font-bold text-gray-500 tracking-wider">SYSTEM STATUS</p>
+                    <div class="flex items-center gap-1.5">
+                        <span class="relative flex h-2 w-2">
+                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                        </span>
+                        <span class="text-[10px] text-emerald-400 font-medium">ONLINE</span>
+                    </div>
+                </div>
+                <div class="h-1 w-full bg-gray-800 rounded-full overflow-hidden">
+                    <div class="h-full bg-emerald-500/50 w-[98%]"></div>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col relative overflow-hidden bg-[#020617]">
+        <div class="absolute bottom-0 right-0 w-[600px] h-[600px] bg-indigo-600/5 rounded-full blur-[120px] pointer-events-none"></div>
+
+        <div class="flex-1 flex flex-col overflow-hidden">
+            <header class="px-10 py-8 pb-4 border-b border-gray-800/50 bg-gray-900/20 backdrop-blur-sm z-10">
+                <div class="flex justify-between items-end">
+                    <div>
+                        <h2 class="text-2xl font-bold text-white mb-1">Active Engagements</h2>
+                        <p class="text-gray-400 text-sm">Leads marked as contacted requiring follow-up.</p>
+                    </div>
+                </div>
+            </header>
+            
+            <div class="flex-1 overflow-y-auto px-10 py-8 bg-gray-900/30">
+                <div class="max-w-6xl mx-auto bg-gray-900/40 border border-gray-800 rounded-xl overflow-hidden backdrop-blur-sm">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="border-b border-gray-800 text-xs font-bold text-gray-500 uppercase tracking-wider">
+                                <th class="p-5">Lead Name</th>
+                                <th class="p-5">Contact Info</th>
+                                <th class="p-5">Status</th>
+                                <th class="p-5 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="followUpTableBody" class="divide-y divide-gray-800/50 text-sm text-gray-300">
+                            <!-- Rows injected here -->
+                        </tbody>
+                    </table>
+                    <div id="emptyState" class="hidden p-10 text-center text-gray-500">
+                        <i data-lucide="check-circle-2" class="w-12 h-12 mx-auto mb-3 opacity-20"></i>
+                        <p>No active follow-ups pending.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        lucide.createIcons();
+        renderFollowUp();
+
+        function renderFollowUp() {
+            const pipeline = JSON.parse(localStorage.getItem('siteScoutPipeline')) || [];
+            // Filter for 'contacted' leads
+            const followUps = pipeline.filter(lead => lead.status === 'contacted');
+            
+            const tbody = document.getElementById('followUpTableBody');
+            const emptyState = document.getElementById('emptyState');
+            
+            tbody.innerHTML = '';
+
+            if(followUps.length === 0) {
+                emptyState.classList.remove('hidden');
+                return;
+            }
+            emptyState.classList.add('hidden');
+
+            followUps.forEach(lead => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-gray-800/30 transition-colors";
+                tr.innerHTML = `
+                    <td class="p-5">
+                        <div class="font-bold text-white">${lead.name}</div>
+                        <div class="text-xs text-gray-500 mt-1">${lead.industry}</div>
+                    </td>
+                    <td class="p-5 text-gray-400">
+                        <div class="flex items-center gap-2 mb-1"><i data-lucide="mail" class="w-3 h-3"></i> ${lead.email || 'N/A'}</div>
+                        <div class="flex items-center gap-2"><i data-lucide="phone" class="w-3 h-3"></i> ${lead.phone || 'N/A'}</div>
+                    </td>
+                    <td class="p-5">
+                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"><i data-lucide="check" class="w-3 h-3"></i> Contacted</span>
+                    </td>
+                    <td class="p-5 text-right">
+                        <button class="px-3 py-2 rounded-lg bg-gray-800 hover:bg-blue-600 text-xs font-semibold text-gray-300 hover:text-white transition-all border border-gray-700 hover:border-blue-500 inline-flex items-center gap-2">
+                            <i data-lucide="send" class="w-3 h-3"></i> Send Follow Up
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+            lucide.createIcons();
+        }
+    </script>
+</body>
+</html>

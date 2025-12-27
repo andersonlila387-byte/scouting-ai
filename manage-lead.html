@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SiteScout CRM | Manage Leads</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --glass-bg: rgba(17, 24, 39, 0.7);
+            --accent: #3B82F6;
+        }
+        body { font-family: 'Inter', sans-serif; background-color: #020617; }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+        .glass {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+        }
+        .glass-hover:hover {
+            background: rgba(30, 41, 59, 0.8);
+            border-color: rgba(59, 130, 246, 0.3);
+        }
+        .sidebar-link.active {
+            background: linear-gradient(90deg, rgba(59, 130, 246, 0.15) 0%, transparent 100%);
+            color: #60A5FA;
+            border-left: 3px solid #60A5FA;
+        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #111827; }
+        ::-webkit-scrollbar-thumb { background: #374151; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #4B5563; }
+    </style>
+</head>
+<body class="text-slate-300 min-h-screen flex overflow-hidden selection:bg-blue-500/30">
+
+    <!-- Sidebar -->
+    <aside class="w-72 bg-[#0B1120] border-r border-gray-800/50 flex flex-col z-20">
+        <div class="p-8 pb-6 flex items-center gap-3">
+            <div class="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20 ring-1 ring-white/10">
+                <i data-lucide="bot" class="w-5 h-5 text-white"></i>
+            </div>
+            <div>
+                <h1 class="font-bold tracking-tight text-xl text-white">SiteScout</h1>
+                <p class="text-[10px] font-mono text-blue-400 tracking-wider">INTELLIGENCE UNIT</p>
+            </div>
+        </div>
+
+        <nav class="flex-1 px-6 space-y-2 mt-6">
+            <p class="text-xs font-semibold text-gray-500 px-3 mb-2 tracking-wider">MODULES</p>
+            <a href="index.html" class="sidebar-link w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-all duration-200 text-sm font-medium group">
+                <i data-lucide="search" class="w-4 h-4"></i>
+                Find Leads
+            </a>
+            <a href="manage-lead.html" class="sidebar-link active w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-all duration-200 text-sm font-medium group">
+                <i data-lucide="kanban-square" class="w-4 h-4"></i>
+                Pipeline
+                <span id="pipelineCount" class="ml-auto text-xs bg-gray-800 text-gray-300 px-2 py-0.5 rounded-md border border-gray-700">0</span>
+            </a>
+            <a href="scouting-history.html" class="sidebar-link w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-all duration-200 text-sm font-medium group">
+                <i data-lucide="history" class="w-4 h-4"></i>
+                History
+            </a>
+            <a href="follow-up.html" class="sidebar-link w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-all duration-200 text-sm font-medium group">
+                <i data-lucide="message-square" class="w-4 h-4"></i>
+                Follow Up
+            </a>
+        </nav>
+
+        <div class="p-6 border-t border-gray-800/50">
+            <div class="bg-gray-900/50 border border-gray-800 p-4 rounded-xl">
+                <div class="flex justify-between items-center mb-2">
+                    <p class="text-[10px] font-bold text-gray-500 tracking-wider">SYSTEM STATUS</p>
+                    <div class="flex items-center gap-1.5">
+                        <span class="relative flex h-2 w-2">
+                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                        </span>
+                        <span class="text-[10px] text-emerald-400 font-medium">ONLINE</span>
+                    </div>
+                </div>
+                <div class="h-1 w-full bg-gray-800 rounded-full overflow-hidden">
+                    <div class="h-full bg-emerald-500/50 w-[98%]"></div>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col relative overflow-hidden bg-[#020617]">
+        
+        <!-- Decoration -->
+        <div class="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-blue-600/10 rounded-full blur-[120px] pointer-events-none"></div>
+        <div class="absolute bottom-0 right-0 w-[600px] h-[600px] bg-indigo-600/5 rounded-full blur-[120px] pointer-events-none"></div>
+
+        <!-- View: PIPELINE -->
+        <div class="flex-1 flex flex-col overflow-hidden">
+            <header class="px-10 py-8 pb-4 border-b border-gray-800/50 bg-gray-900/20 backdrop-blur-sm z-10">
+                <div class="flex justify-between items-end">
+                    <div>
+                        <h2 class="text-2xl font-bold text-white mb-1">Manage Leads</h2>
+                        <p class="text-gray-400 text-sm">Track and audit your active opportunities.</p>
+                    </div>
+                    <div class="flex gap-2 items-center">
+                        <div class="flex items-center gap-2 mr-2">
+                            <span class="text-xs text-gray-500 font-medium">Status:</span>
+                            <select id="statusFilter" onchange="currentPage=1; renderPipeline()" class="bg-gray-900 border border-gray-700 text-gray-300 text-xs rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-1.5 outline-none">
+                                <option value="all">All</option>
+                                <option value="new">New</option>
+                                <option value="contacted">Contacted</option>
+                            </select>
+                        </div>
+                        <div class="flex items-center gap-2 mr-2">
+                            <span class="text-xs text-gray-500 font-medium">Sort:</span>
+                            <select id="sortFilter" onchange="renderPipeline()" class="bg-gray-900 border border-gray-700 text-gray-300 text-xs rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-1.5 outline-none">
+                                <option value="default">Default</option>
+                                <option value="rating_asc">Lowest Rating</option>
+                                <option value="rating_desc">Highest Rating</option>
+                                <option value="reviews_desc">Most Reviews</option>
+                            </select>
+                        </div>
+                        <button onclick="exportToCSV()" class="p-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition" title="Export CSV"><i data-lucide="download" class="w-4 h-4"></i></button>
+                    </div>
+                </div>
+            </header>
+            
+            <div class="flex-1 overflow-y-auto px-10 py-8 bg-gray-900/30">
+                <div class="max-w-6xl mx-auto bg-gray-900/40 border border-gray-800 rounded-xl overflow-hidden backdrop-blur-sm">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="border-b border-gray-800 text-xs font-bold text-gray-500 uppercase tracking-wider">
+                                <th class="p-5">Lead Details</th>
+                                <th class="p-5">Contact & Socials</th>
+                                <th class="p-5">Recon Data</th>
+                                <th class="p-5 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="pipelineTableBody" class="divide-y divide-gray-800/50 text-sm text-gray-300">
+                            <!-- Rows injected here -->
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Pagination -->
+                <div id="paginationControls" class="max-w-6xl mx-auto mt-6 flex justify-between items-center">
+                    <button onclick="changePage(-1)" id="prevBtn" class="px-4 py-2 rounded-lg border border-gray-700 hover:bg-gray-800 text-gray-400 hover:text-white transition text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
+                        <i data-lucide="chevron-left" class="w-4 h-4"></i> Previous
+                    </button>
+                    <span class="text-sm text-gray-500 font-mono">Page <span id="pageIndicator">1</span></span>
+                    <button onclick="changePage(1)" id="nextBtn" class="px-4 py-2 rounded-lg border border-gray-700 hover:bg-gray-800 text-gray-400 hover:text-white transition text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
+                        Next <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Analysis Modal -->
+    <div id="auditModal" class="fixed inset-0 z-50 hidden">
+        <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" onclick="closeModal()"></div>
+        <div class="absolute inset-0 flex items-center justify-center p-4">
+            <div class="bg-gray-900 border border-gray-700 w-full max-w-3xl max-h-[85vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden relative">
+                
+                <!-- Modal Header -->
+                <div class="p-6 border-b border-gray-800 flex justify-between items-center bg-gray-800/50">
+                    <div>
+                        <h3 id="modalTitle" class="text-xl font-bold text-white">Analysis Report</h3>
+                        <p class="text-sm text-gray-400 flex items-center gap-2 mt-1">
+                            <span class="w-2 h-2 rounded-full bg-green-500"></span> AI Analysis Complete
+                        </p>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <button onclick="markAsContacted()" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition">
+                            Mark Contacted
+                        </button>
+                        <button onclick="closeModal()" class="p-2 hover:bg-gray-800 rounded-lg text-gray-400 hover:text-white transition">
+                            <i data-lucide="x" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Modal Body -->
+                <div class="flex-1 overflow-y-auto p-8">
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                        <!-- Score Card -->
+                        <div class="lg:col-span-1">
+                            <div class="glass p-6 rounded-xl text-center mb-6">
+                                <p class="text-xs text-gray-500 uppercase tracking-widest mb-4">Urgency Score</p>
+                                <div class="text-6xl font-bold text-white mb-2" id="auditScore">--</div>
+                                <div class="h-2 w-full bg-gray-800 rounded-full overflow-hidden">
+                                    <div id="scoreBar" class="h-full bg-red-500 w-0 transition-all duration-1000"></div>
+                                </div>
+                            </div>
+                            
+                            <h4 class="text-sm font-semibold text-gray-300 uppercase mb-3">Pain Points</h4>
+                            <div class="space-y-2" id="painPointsList"></div>
+                        </div>
+
+                        <!-- Message Draft -->
+                        <div class="lg:col-span-2">
+                            <div class="glass border border-gray-700/50 rounded-xl overflow-hidden flex flex-col h-full">
+                                <div class="bg-gray-800/50 px-4 py-2 border-b border-gray-700/50 flex justify-between items-center">
+                                    <span class="text-xs font-mono text-gray-400">EMAIL_DRAFT_GEN_V2</span>
+                                    <button onclick="copyToClipboard()" class="text-xs text-blue-400 hover:text-blue-300 flex items-center gap-1">
+                                        <i data-lucide="copy" class="w-3 h-3"></i> Copy
+                                    </button>
+                                </div>
+                                <textarea id="outreachMessage" class="flex-1 bg-transparent p-6 text-gray-300 text-sm leading-relaxed resize-none focus:outline-none" spellcheck="false"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:8000/api';
+        let pipeline = JSON.parse(localStorage.getItem('siteScoutPipeline')) || [];
+        let activeLeadId = null;
+        let currentPage = 1;
+        const itemsPerPage = 10;
+
+        lucide.createIcons();
+        updatePipelineCounts();
+        renderPipeline();
+
+        function getProcessedPipeline() {
+            let processed = [...pipeline];
+            
+            const statusValue = document.getElementById('statusFilter') ? document.getElementById('statusFilter').value : 'all';
+            if(statusValue !== 'all') {
+                processed = processed.filter(lead => lead.status === statusValue);
+            }
+
+            const sortValue = document.getElementById('sortFilter') ? document.getElementById('sortFilter').value : 'default';
+            
+            if(sortValue === 'rating_asc') {
+                processed.sort((a, b) => (a.rating || 0) - (b.rating || 0));
+            } else if(sortValue === 'rating_desc') {
+                processed.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+            } else if(sortValue === 'reviews_desc') {
+                processed.sort((a, b) => (b.review_count || 0) - (a.review_count || 0));
+            }
+            return processed;
+        }
+
+        function renderPipeline() {
+            const tbody = document.getElementById('pipelineTableBody');
+            tbody.innerHTML = '';
+            const processed = getProcessedPipeline();
+
+            const start = (currentPage - 1) * itemsPerPage;
+            const end = start + itemsPerPage;
+            const paginatedItems = processed.slice(start, end);
+
+            paginatedItems.forEach(lead => {
+                const tr = createPipelineRow(lead);
+                tbody.appendChild(tr);
+            });
+            
+            // Update Controls
+            const totalPages = Math.ceil(processed.length / itemsPerPage) || 1;
+            document.getElementById('pageIndicator').innerText = `${currentPage} / ${totalPages}`;
+            document.getElementById('prevBtn').disabled = currentPage === 1;
+            document.getElementById('nextBtn').disabled = currentPage >= totalPages;
+            
+            lucide.createIcons();
+        }
+        
+        function changePage(delta) {
+            const processed = getProcessedPipeline();
+            const totalPages = Math.ceil(processed.length / itemsPerPage) || 1;
+            const newPage = currentPage + delta;
+            if (newPage >= 1 && newPage <= totalPages) {
+                currentPage = newPage;
+                renderPipeline();
+            }
+        }
+
+        function createPipelineRow(lead) {
+            const tr = document.createElement('tr');
+            tr.className = "hover:bg-gray-800/30 transition-colors";
+            
+            let statusBadge = lead.status === 'contacted' 
+                ? '<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"><i data-lucide="check" class="w-3 h-3"></i> Contacted</span>'
+                : '<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-blue-500/10 text-blue-400 border border-blue-500/20">New Lead</span>';
+            
+            let reconDisplay = '<span class="text-gray-500 text-xs italic flex items-center gap-1"><i data-lucide="minus" class="w-3 h-3"></i> Pending Analysis</span>';
+            if(lead.analysis) {
+                reconDisplay = `
+                    <div class="flex flex-col gap-1">
+                        <div class="flex items-center gap-2">
+                            <span class="font-bold text-lg ${lead.analysis.audit_score < 50 ? 'text-red-400' : 'text-yellow-400'}">${lead.analysis.audit_score}</span>
+                            <span class="text-[10px] uppercase tracking-wider text-gray-500">Urgency Score</span>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // Socials
+            let socialIcons = '';
+            if(lead.social_media) {
+                if(lead.social_media.linkedin) socialIcons += `<a href="${lead.social_media.linkedin}" target="_blank" class="text-gray-500 hover:text-blue-400"><i data-lucide="linkedin" class="w-3 h-3"></i></a>`;
+                if(lead.social_media.twitter) socialIcons += `<a href="${lead.social_media.twitter}" target="_blank" class="text-gray-500 hover:text-sky-400"><i data-lucide="twitter" class="w-3 h-3"></i></a>`;
+                if(lead.social_media.facebook) socialIcons += `<a href="${lead.social_media.facebook}" target="_blank" class="text-gray-500 hover:text-blue-600"><i data-lucide="facebook" class="w-3 h-3"></i></a>`;
+            }
+
+            let ratingHtml = '';
+            if(lead.rating) {
+                ratingHtml = `<div class="flex items-center gap-1 text-xs mt-1">
+                    <i data-lucide="star" class="w-3 h-3 text-yellow-500 fill-yellow-500"></i>
+                    <span class="text-gray-300 font-medium">${lead.rating}</span>
+                    <span class="text-gray-600">(${lead.review_count || 0})</span>
+                </div>`;
+            }
+
+            tr.innerHTML = `
+                <td class="p-5">
+                    <div class="font-bold text-white text-base mb-1">${lead.name}</div>
+                    ${ratingHtml}
+                    <div class="text-xs text-gray-500 mt-1 flex items-center gap-2">
+                        <i data-lucide="map-pin" class="w-3 h-3"></i> ${lead.location}
+                        <span class="text-gray-700">|</span>
+                        <i data-lucide="briefcase" class="w-3 h-3"></i> ${lead.industry}
+                    </div>
+                    <div class="mt-2">${statusBadge}</div>
+                </td>
+                <td class="p-5">
+                    <div class="text-sm text-gray-300 flex items-center gap-2 mb-1">
+                        <i data-lucide="mail" class="w-3 h-3 text-gray-500"></i> 
+                        ${lead.email ? `
+                            <span class="truncate max-w-[150px]">${lead.email}</span>
+                            <button onclick="verifyEmail('${lead.email}', this)" class="ml-1 px-1.5 py-0.5 rounded border border-gray-700 bg-gray-800 hover:bg-gray-700 text-[10px] text-gray-400 hover:text-white transition">Verify</button>
+                        ` : 'N/A'}
+                    </div>
+                    <div class="text-sm text-gray-300 flex items-center gap-2 mb-2"><i data-lucide="phone" class="w-3 h-3 text-gray-500"></i> ${lead.phone || 'N/A'}</div>
+                    <div class="flex gap-2 border-t border-gray-800 pt-2">
+                        ${socialIcons || '<span class="text-xs text-gray-600">No socials found</span>'}
+                    </div>
+                </td>
+                <td class="p-5">${reconDisplay}</td>
+                <td class="p-5 text-right">
+                    <div class="flex justify-end gap-2">
+                        <a href="${lead.source_url || '#'}" target="_blank" class="px-3 py-2 rounded-lg border border-gray-700 hover:bg-gray-800 text-gray-400 hover:text-white transition text-xs font-medium flex items-center gap-2">
+                            <i data-lucide="search" class="w-3 h-3"></i> Research
+                        </a>
+                        <button onclick="openAuditModal('${lead.id}')" class="px-3 py-2 rounded-lg border border-gray-700 hover:bg-gray-800 text-gray-400 hover:text-white transition text-xs font-medium flex items-center gap-2">
+                            <i data-lucide="scan-search" class="w-3 h-3"></i> Recon
+                        </button>
+                        <button onclick="openAuditModal('${lead.id}')" class="px-3 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white transition shadow-lg shadow-blue-900/20 text-xs font-medium flex items-center gap-2">
+                            <i data-lucide="send" class="w-3 h-3"></i> Message
+                        </button>
+                        <button onclick="deleteLead('${lead.id}')" class="px-3 py-2 rounded-lg border border-red-900/30 text-red-400 hover:bg-red-900/20 hover:text-red-300 transition text-xs font-medium flex items-center gap-2" title="Delete">
+                            <i data-lucide="trash-2" class="w-3 h-3"></i>
+                        </button>
+                    </div>
+                </td>
+            `;
+            return tr;
+        }
+
+        function savePipeline() {
+            localStorage.setItem('siteScoutPipeline', JSON.stringify(pipeline));
+            updatePipelineCounts();
+        }
+
+        function updatePipelineCounts() {
+            document.getElementById('pipelineCount').innerText = pipeline.length;
+        }
+
+        async function openAuditModal(id) {
+            const lead = pipeline.find(p => p.id === id);
+            if(!lead) return;
+            activeLeadId = id;
+            const modal = document.getElementById('auditModal');
+            modal.classList.remove('hidden');
+            document.getElementById('modalTitle').innerText = lead.name;
+            
+            if(lead.analysis) {
+                populateModal(lead.analysis);
+            } else {
+                document.getElementById('outreachMessage').value = "AI Agent is analyzing digital footprint...\n\nDrafting Strategy...";
+                document.getElementById('auditScore').innerText = "--";
+                try {
+                    const res = await fetch(`${API_URL}/analyze`, {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({ business_name: lead.name, industry: lead.industry, location: lead.location, website: lead.website })
+                    });
+                    const analysis = await res.json();
+                    lead.analysis = analysis;
+                    savePipeline();
+                    renderPipeline(); // Update table with new score
+                    populateModal(analysis);
+                } catch(e) {
+                    console.error(e);
+                    document.getElementById('outreachMessage').value = "Error connecting to AI. Check server logs.";
+                }
+            }
+        }
+
+        function populateModal(data) {
+            document.getElementById('auditScore').innerText = data.audit_score;
+            document.getElementById('scoreBar').style.width = `${data.audit_score}%`;
+            document.getElementById('scoreBar').className = `h-full transition-all duration-1000 ${data.audit_score < 50 ? 'bg-red-500' : 'bg-yellow-500'}`;
+            document.getElementById('outreachMessage').value = data.outreach_message;
+            const list = document.getElementById('painPointsList');
+            list.innerHTML = data.pain_points.map(p => `<div class="flex items-start gap-2 text-sm text-gray-400"><i data-lucide="alert-circle" class="w-4 h-4 text-red-400 mt-0.5"></i> ${p}</div>`).join('');
+            lucide.createIcons();
+        }
+
+        function markAsContacted() {
+            const lead = pipeline.find(p => p.id === activeLeadId);
+            if(lead) {
+                lead.status = 'contacted';
+                savePipeline();
+                closeModal();
+                renderPipeline();
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('auditModal').classList.add('hidden');
+            activeLeadId = null;
+        }
+
+        function copyToClipboard() {
+            const copyText = document.getElementById("outreachMessage");
+            copyText.select();
+            document.execCommand("copy");
+            alert("Draft copied to clipboard!");
+        }
+
+        function exportToCSV() {
+            if (pipeline.length === 0) {
+                alert("No leads to export.");
+                return;
+            }
+
+            const headers = ["Name", "Industry", "Location", "Website", "Phone", "Email", "Status", "Audit Score", "Rating", "Review Count", "Source URL"];
+            const rows = pipeline.map(lead => {
+                const score = lead.analysis ? lead.analysis.audit_score : "N/A";
+                // Helper to escape quotes for CSV format
+                const escape = (text) => `"${(text || '').toString().replace(/"/g, '""')}"`;
+                
+                return [
+                    escape(lead.name),
+                    escape(lead.industry),
+                    escape(lead.location),
+                    escape(lead.website),
+                    escape(lead.phone),
+                    escape(lead.email),
+                    escape(lead.status),
+                    escape(score),
+                    escape(lead.rating),
+                    escape(lead.review_count),
+                    escape(lead.source_url)
+                ].join(",");
+            });
+
+            const csvContent = [headers.join(","), ...rows].join("\n");
+            const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.setAttribute("href", url);
+            link.setAttribute("download", "site_scout_leads.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function deleteLead(id) {
+            if(confirm("Are you sure you want to remove this lead from the pipeline?")) {
+                pipeline = pipeline.filter(p => p.id !== id);
+                savePipeline();
+                
+                const processed = getProcessedPipeline();
+                const totalPages = Math.ceil(processed.length / itemsPerPage) || 1;
+                if (currentPage > totalPages) currentPage = totalPages;
+                
+                renderPipeline();
+            }
+        }
+
+        async function verifyEmail(email, btn) {
+            const originalContent = btn.innerHTML;
+            btn.innerHTML = '<i data-lucide="loader-2" class="w-3 h-3 animate-spin"></i>';
+            btn.disabled = true;
+            lucide.createIcons();
+
+            try {
+                const res = await fetch(`${API_URL}/verify-email`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ email })
+                });
+                const data = await res.json();
+                
+                btn.disabled = false;
+                btn.onclick = null; // Disable click
+                btn.classList.remove('hover:bg-gray-700', 'hover:text-white', 'bg-gray-800', 'border-gray-700');
+                
+                if(data.status === 'valid') {
+                    btn.innerHTML = 'Valid';
+                    btn.classList.add('bg-emerald-500/10', 'text-emerald-400', 'border-emerald-500/20', 'cursor-default');
+                } else {
+                    btn.innerHTML = 'Invalid';
+                    btn.classList.add('bg-red-500/10', 'text-red-400', 'border-red-500/20', 'cursor-default');
+                }
+            } catch(e) {
+                console.error(e);
+                btn.innerHTML = originalContent;
+                btn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>
